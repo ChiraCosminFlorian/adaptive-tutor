@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
+const { errorHandler } = require('./middleware/errorHandler');
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 
 // Routes
-const authRoutes = require('./routes/auth');
+const authRoutes = require('./routes/auth.routes');
 const quizRoutes = require('./routes/quiz');
 const progressRoutes = require('./routes/progress');
 
@@ -36,6 +37,9 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// Global error handler (must be last)
+app.use(errorHandler);
 
 // Start server
 const PORT = process.env.PORT || 5000;
