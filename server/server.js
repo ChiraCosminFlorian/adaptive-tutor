@@ -21,7 +21,7 @@ app.use(express.json());
 
 // Routes
 const authRoutes = require('./routes/auth.routes');
-const quizRoutes = require('./routes/quiz');
+const quizRoutes = require('./routes/quiz.routes');
 const progressRoutes = require('./routes/progress');
 
 app.use('/api/auth', authRoutes);
