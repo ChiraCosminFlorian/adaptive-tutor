@@ -63,6 +63,10 @@ async function register(req, res, next) {
       profile: { displayName: username },
     });
 
+    if (process.env.ADMIN_EMAIL && email.toLowerCase() === process.env.ADMIN_EMAIL.toLowerCase()) {
+      user.role = 'admin';
+    }
+
     const accessToken = generateAccessToken(user._id.toString(), user.email);
     const refreshToken = generateRefreshToken(user._id.toString());
 
@@ -75,7 +79,7 @@ async function register(req, res, next) {
     return res.status(201).json({
       success: true,
       data: {
-        user: { id: user._id, email: user.email, username: user.username },
+        user: { id: user._id, email: user.email, username: user.username, role: user.role },
         accessToken,
       },
     });
@@ -124,7 +128,7 @@ async function login(req, res, next) {
     return res.status(200).json({
       success: true,
       data: {
-        user: { id: user._id, email: user.email, username: user.username },
+        user: { id: user._id, email: user.email, username: user.username, role: user.role },
         accessToken,
       },
     });
@@ -257,10 +261,53 @@ async function getMe(req, res, next) {
   }
 }
 
+// ─── Change Password ─────────────────────────────────────
+
+async function changePassword(req, res, next) {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password and new password are required',
+      });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: 'New password must be at least 8 characters' });
+    }
+    if (!/[A-Z]/.test(newPassword)) {
+      return res.status(400).json({ success: false, message: 'New password must contain at least 1 uppercase letter' });
+    }
+    if (!/[0-9]/.test(newPassword)) {
+      return res.status(400).json({ success: false, message: 'New password must contain at least 1 number' });
+    }
+
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Current password is incorrect' });
+    }
+
+    user.passwordHash = await bcrypt.hash(newPassword, 12);
+    await user.save();
+
+    return res.status(200).json({ success: true, message: 'Password updated' });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   register,
   login,
   refresh,
   logout,
   getMe,
+  changePassword,
 };

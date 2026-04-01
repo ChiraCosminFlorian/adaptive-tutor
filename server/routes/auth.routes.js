@@ -8,6 +8,7 @@ const {
   refresh,
   logout,
   getMe,
+  changePassword,
 } = require('../controllers/authController');
 
 router.post('/register', authLimiter, register);
@@ -15,5 +16,7 @@ router.post('/login', authLimiter, login);
 router.post('/refresh', refresh);
 router.post('/logout', logout);
 router.get('/me', requireAuth, getMe);
+router.put('/password', requireAuth, changePassword);
 
 module.exports = router;
+

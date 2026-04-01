@@ -10,6 +10,7 @@ function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   function validate() {
     const e = {};
@@ -104,17 +105,26 @@ function Login() {
               <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-400">
                 Password
               </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                value={form.password}
-                onChange={handleChange}
-                className={`w-full rounded-lg border bg-gray-800/50 px-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 ${
-                  errors.password ? 'border-red-500' : 'border-gray-700'
-                }`}
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={form.password}
+                  onChange={handleChange}
+                  className={`w-full rounded-lg border bg-gray-800/50 px-4 py-2.5 pr-16 text-sm text-white placeholder-gray-600 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 ${
+                    errors.password ? 'border-red-500' : 'border-gray-700'
+                  }`}
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-500 hover:text-gray-300"
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
               {errors.password && <p className="mt-1 text-xs text-red-400">{errors.password}</p>}
             </div>
 

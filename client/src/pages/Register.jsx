@@ -29,6 +29,8 @@ function Register() {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const strength = useMemo(() => getPasswordStrength(form.password), [form.password]);
 
@@ -166,17 +168,26 @@ function Register() {
               <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-400">
                 Password
               </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                value={form.password}
-                onChange={handleChange}
-                className={`w-full rounded-lg border bg-gray-800/50 px-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 ${
-                  errors.password ? 'border-red-500' : 'border-gray-700'
-                }`}
-                placeholder="Min 8 chars, 1 uppercase, 1 number"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={form.password}
+                  onChange={handleChange}
+                  className={`w-full rounded-lg border bg-gray-800/50 px-4 py-2.5 pr-16 text-sm text-white placeholder-gray-600 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 ${
+                    errors.password ? 'border-red-500' : 'border-gray-700'
+                  }`}
+                  placeholder="Min 8 chars, 1 uppercase, 1 number"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-500 hover:text-gray-300"
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
               {errors.password && <p className="mt-1 text-xs text-red-400">{errors.password}</p>}
 
               {/* Strength bar */}
@@ -201,17 +212,26 @@ function Register() {
               <label htmlFor="confirmPassword" className="mb-1 block text-sm font-medium text-gray-400">
                 Confirm Password
               </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                value={form.confirmPassword}
-                onChange={handleChange}
-                className={`w-full rounded-lg border bg-gray-800/50 px-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 ${
-                  errors.confirmPassword ? 'border-red-500' : 'border-gray-700'
-                }`}
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirm ? 'text' : 'password'}
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                  className={`w-full rounded-lg border bg-gray-800/50 px-4 py-2.5 pr-16 text-sm text-white placeholder-gray-600 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 ${
+                    errors.confirmPassword ? 'border-red-500' : 'border-gray-700'
+                  }`}
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-500 hover:text-gray-300"
+                >
+                  {showConfirm ? 'Hide' : 'Show'}
+                </button>
+              </div>
               {errors.confirmPassword && (
                 <p className="mt-1 text-xs text-red-400">{errors.confirmPassword}</p>
               )}
