@@ -5,19 +5,13 @@ const User = require('../models/User');
 const { generateQuestion, evaluateAnswer, generateHint } = require('../services/aiService');
 const { updateBKT, isMastered, getKnowledgeLevel, suggestDifficulty } = require('../utils/bktEngine');
 
-// ─── Start Session ───────────────────────────────────────
-
 async function startSession(req, res, next) {
   try {
     const { subject, concept } = req.body;
     const userId = req.user.userId;
 
-    const session = await Session.create({
-      userId,
-      subject,
-    });
+    const session = await Session.create({ userId, subject });
 
-    // Find or create the ConceptMastery record
     let mastery = await ConceptMastery.findOne({ userId, subject, concept });
     if (!mastery) {
       mastery = await ConceptMastery.create({ userId, subject, concept });
@@ -25,7 +19,6 @@ async function startSession(req, res, next) {
 
     const difficulty = suggestDifficulty(mastery.pL);
 
-    // Gather recent mistakes for this subject
     const recentWrong = await Answer.find({ userId, subject, isCorrect: false })
       .sort({ createdAt: -1 })
       .limit(5)
@@ -34,7 +27,6 @@ async function startSession(req, res, next) {
 
     const question = await generateQuestion(subject, difficulty, concept, recentMistakes);
 
-    // Track the first difficulty in the progression
     session.difficultyProgression.push(difficulty);
     await session.save();
 
@@ -55,11 +47,10 @@ async function startSession(req, res, next) {
       },
     });
   } catch (error) {
+    console.error('startSession error:', error);
     next(error);
   }
 }
-
-// ─── Submit Answer ───────────────────────────────────────
 
 async function submitAnswer(req, res, next) {
   try {
@@ -82,7 +73,6 @@ async function submitAnswer(req, res, next) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 
-    // Evaluate the answer
     const currentDifficulty =
       session.difficultyProgression[session.difficultyProgression.length - 1] || 1;
 
@@ -95,8 +85,7 @@ async function submitAnswer(req, res, next) {
       correctOption
     );
 
-    // Save Answer document
-    const answer = await Answer.create({
+    await Answer.create({
       userId,
       sessionId: session._id,
       subject: session.subject,
@@ -112,7 +101,6 @@ async function submitAnswer(req, res, next) {
       timeSpentSeconds: timeSpentSeconds || 0,
     });
 
-    // Update BKT
     let mastery = await ConceptMastery.findOne({
       userId,
       subject: session.subject,
@@ -135,7 +123,6 @@ async function submitAnswer(req, res, next) {
     mastery.updatedAt = new Date();
     await mastery.save();
 
-    // Update session stats
     session.totalQuestions += 1;
     if (evaluation.isCorrect) session.correctAnswers += 1;
 
@@ -147,7 +134,6 @@ async function submitAnswer(req, res, next) {
     let nextOptions = null;
 
     if (!endSession) {
-      // Gather recent mistakes
       const recentWrong = await Answer.find({
         userId,
         subject: session.subject,
@@ -206,11 +192,10 @@ async function submitAnswer(req, res, next) {
       },
     });
   } catch (error) {
+    console.error('submitAnswer error:', error);
     next(error);
   }
 }
-
-// ─── End Session ─────────────────────────────────────────
 
 async function endSession(req, res, next) {
   try {
@@ -227,14 +212,13 @@ async function endSession(req, res, next) {
 
     session.endedAt = new Date();
 
-    // Calculate average difficulty
     if (session.difficultyProgression.length > 0) {
       const sum = session.difficultyProgression.reduce((a, b) => a + b, 0);
-      session.averageDifficulty = Math.round((sum / session.difficultyProgression.length) * 100) / 100;
+      session.averageDifficulty =
+        Math.round((sum / session.difficultyProgression.length) * 100) / 100;
     }
     await session.save();
 
-    // Update user streak and stats
     const user = await User.findById(userId);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -246,13 +230,11 @@ async function endSession(req, res, next) {
     if (lastActive) {
       lastActive.setHours(0, 0, 0, 0);
       const diffDays = Math.round((today - lastActive) / (1000 * 60 * 60 * 24));
-
       if (diffDays === 1) {
         user.profile.streakDays += 1;
       } else if (diffDays > 1) {
         user.profile.streakDays = 1;
       }
-      // diffDays === 0 → same day, no change
     } else {
       user.profile.streakDays = 1;
     }
@@ -284,23 +266,21 @@ async function endSession(req, res, next) {
       },
     });
   } catch (error) {
+    console.error('endSession error:', error);
     next(error);
   }
 }
 
-// ─── Get Hint ────────────────────────────────────────────
-
 async function getHint(req, res, next) {
   try {
     const { question, concept, subject } = req.body;
-
     const hint = await generateHint(question, concept, subject);
-
     return res.status(200).json({
       success: true,
       data: { hint },
     });
   } catch (error) {
+    console.error('getHint error:', error);
     next(error);
   }
 }
