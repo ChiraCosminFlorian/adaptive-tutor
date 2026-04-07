@@ -14,6 +14,7 @@ import Results from './pages/Results';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import NotFound from './pages/NotFound';
+import BKTVisualization from './pages/BKTVisualization';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -77,6 +78,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
+          <Route
+            path="/bkt"
+            element={
+              <ProtectedRoute>
+                <BKTVisualization />
+              </ProtectedRoute>
+            }
+          />
 
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />

@@ -44,6 +44,14 @@ function Navbar() {
               Dashboard
             </Link>
             <Link
+              to="/bkt"
+              className={`text-sm font-medium transition-colors hover:text-indigo-400 ${
+                location.pathname === '/bkt' ? 'text-indigo-400' : 'text-gray-400'
+              }`}
+            >
+              BKT Analysis
+            </Link>
+            <Link
               to="/profile"
               className={`text-sm font-medium transition-colors hover:text-indigo-400 ${
                 location.pathname === '/profile' ? 'text-indigo-400' : 'text-gray-400'
@@ -92,6 +100,13 @@ function Navbar() {
             className="block py-2 text-sm text-gray-300 hover:text-indigo-400"
           >
             Dashboard
+          </Link>
+          <Link
+            to="/bkt"
+            onClick={() => setMobileOpen(false)}
+            className="block py-2 text-sm text-gray-300 hover:text-indigo-400"
+          >
+            BKT Analysis
           </Link>
           <Link
             to="/profile"
